@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SubastasPro — Subastas en Tiempo Real{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Plataforma de subastas en línea con pujas en tiempo real. Encuentra artículos únicos y haz tus pujas.{% endblock %}" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Socket.IO -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+
+  <style>
+    /* ── DESIGN TOKENS ────────────────────────────────────────── */
+    :root {
+      --bg-deep:    #080812;
+      --bg-base:    #0d0d1f;
+      --bg-card:    rgba(255,255,255,0.04);
+      --bg-card-hover: rgba(255,255,255,0.07);
+      --border:     rgba(255,255,255,0.08);
+      --border-glow: rgba(245,158,11,0.35);
+
+      --gold:       #f59e0b;
+      --gold-light: #fbbf24;
+      --gold-dark:  #d97706;
+      --gold-faint: rgba(245,158,11,0.1);
+
+      --text-primary:   #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted:     #475569;
+
+      --success: #10b981;
+      --danger:  #ef4444;
+      --info:    #3b82f6;
+
+      --radius-sm: 8px;
+      --radius:    14px;
+      --radius-lg: 22px;
+      --radius-xl: 32px;
+
+      --shadow-glow: 0 0 40px rgba(245,158,11,0.12);
+      --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-card-hover: 0 16px 48px rgba(0,0,0,0.6);
+    }
+
+    /* ── RESET & BASE ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Subtle animated gradient background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 800px 600px at 20% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+        radial-gradient(ellipse 600px 800px at 80% 100%, rgba(59,130,246,0.05) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── NAVBAR ───────────────────────────────────────────────── */
+    nav.navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,8,18,0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 clamp(1rem, 4vw, 3rem);
+    }
+
+    .nav-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 0 20px rgba(245,158,11,0.3);
+    }
+
+    .logo-text {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .logo-text span { color: var(--gold); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.5rem 0.875rem;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover { color: var(--text-primary); background: var(--bg-card); }
+    .nav-link.active { color: var(--gold); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .username-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 6px 14px 6px 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .username-badge:hover { border-color: var(--gold); background: var(--gold-faint); }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #000;
+      flex-shrink: 0;
+    }
+
+    .username-text {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* ── BUTTONS ──────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: #000;
+      box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+    }
+    .btn-gold:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(245,158,11,0.45);
+    }
+    .btn-gold:active { transform: translateY(0); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--gold);
+      border: 1px solid var(--gold);
+    }
+    .btn-outline:hover { background: var(--gold-faint); }
+
+    .btn-ghost {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: var(--bg-card-hover); border-color: rgba(255,255,255,0.15); }
+
+    .btn-danger {
+      background: rgba(239,68,68,0.15);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.3);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+    .btn-lg { padding: 0.875rem 1.75rem; font-size: 1rem; border-radius: var(--radius); }
+    .btn-sm { padding: 0.4rem 0.875rem; font-size: 0.8rem; }
+
+    /* ── MAIN CONTENT ─────────────────────────────────────────── */
+    main { flex: 1; position: relative; z-index: 1; }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 clamp(1rem, 4vw, 3rem);
+    }
+
+    /* ── CARDS ────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      border-color: var(--border-glow);
+      box-shadow: var(--shadow-card-hover), var(--shadow-glow);
+      transform: translateY(-4px);
+    }
+
+    /* ── BADGE ────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+    .badge-active { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+    .badge-closed { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+    .badge-gold   { background: var(--gold-faint); color: var(--gold); border: 1px solid rgba(245,158,11,0.3); }
+
+    /* Pulse dot */
+    .pulse-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    /* ── FORMS ────────────────────────────────────────────────── */
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-label { font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); }
+
+    .form-input {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.9rem;
+      padding: 0.7rem 1rem;
+      transition: all 0.2s ease;
+      width: 100%;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(245,158,11,0.12);
+      background: rgba(255,255,255,0.06);
+    }
+    .form-input::placeholder { color: var(--text-muted); }
+
+    textarea.form-input { resize: vertical; min-height: 100px; }
+
+    select.form-input option { background: #1a1a2e; }
+
+    /* ── ALERTS / TOASTS ──────────────────────────────────────── */
+    .toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: rgba(15,15,30,0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      max-width: 320px;
+      pointer-events: auto;
+      animation: slideInRight 0.3s ease forwards;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast.success { border-color: rgba(16,185,129,0.4); }
+    .toast.error   { border-color: rgba(239,68,68,0.4); }
+    .toast.info    { border-color: rgba(245,158,11,0.4); }
+
+    @keyframes slideInRight {
+      from { transform: translateX(110%); opacity: 0; }
+      to   { transform: translateX(0);   opacity: 1; }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(110%); }
+    }
+
+    /* ── MODAL ────────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .modal {
+      background: #12121f;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      max-width: 420px;
+      width: 100%;
+      transform: scale(0.95) translateY(10px);
+      transition: transform 0.2s ease;
+    }
+    .modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
+    /* ── FOOTER ───────────────────────────────────────────────── */
+    footer {
+      background: rgba(0,0,0,0.3);
+      border-top: 1px solid var(--border);
+      padding: 2rem clamp(1rem,4vw,3rem);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      position: relative;
+      z-index: 1;
+    }
+    footer a { color: var(--gold); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ── SCROLLBAR ────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── UTILITIES ────────────────────────────────────────────── */
+    .text-gold { color: var(--gold); }
+    .text-muted { color: var(--text-muted); }
+    .text-secondary { color: var(--text-secondary); }
+    .text-success { color: var(--success); }
+    .text-danger { color: var(--danger); }
+    .fw-bold { font-weight: 700; }
+    .fw-black { font-weight: 900; }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .gap-1 { gap: 0.5rem; }
+    .gap-2 { gap: 1rem; }
+    .hidden { display: none !important; }
+
+    {% block extra_styles %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <div class="logo-icon">🔨</div>
+      <div class="logo-text">Subastas<span>Pro</span></div>
+    </a>
+
+    <div class="nav-links">
+      <a href="/" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+        Inicio
+      </a>
+      <a href="/?status=active" class="nav-link">Activas</a>
+      <a href="/?status=closed" class="nav-link">Cerradas</a>
+    </div>
+
+    <div class="nav-actions">
+      <div class="username-badge" id="usernameBadge" title="Cambiar nombre de usuario">
+        <div class="avatar" id="navAvatar">U</div>
+        <span class="username-text" id="navUsername">{{ username }}</span>
+        <span style="font-size:11px; color:var(--text-muted);">✎</span>
+      </div>
+      <a href="/create" class="btn btn-gold btn-sm">
+        + Nueva Subasta
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2024 <a href="/">SubastasPro</a> — Sistema de subastas en tiempo real &nbsp;|&nbsp;
+  Hecho con ❤️ y Python + Flask</p>
+</footer>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- USERNAME MODAL -->
+<div class="modal-overlay" id="usernameModal">
+  <div class="modal">
+    <h2 style="font-size:1.2rem; font-weight:800; margin-bottom:0.25rem;">Cambiar usuario</h2>
+    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:1.25rem;">
+      Tu nombre de usuario identifica tus pujas. Elige uno memorable.
+    </p>
+    <div class="form-group">
+      <label class="form-label" for="newUsernameInput">Nuevo nombre de usuario</label>
+      <input type="text" id="newUsernameInput" class="form-input"
+             placeholder="Ej: ColeccionistaVIP" maxlength="30" />
+    </div>
+    <div style="display:flex; gap:10px; margin-top:1.25rem;">
+      <button class="btn btn-gold" id="saveUsernameBtn" style="flex:1">Guardar</button>
+      <button class="btn btn-ghost" id="cancelUsernameBtn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL JS -->
+<script>
+  // ── Toast system ────────────────────────────────────────────────
+  function showToast(message, type = 'info', duration = 3500) {
+    const container = document.getElementById('toastContainer');
+    const icons = { success: '✅', error: '❌', info: '🔔' };
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span>${icons[type] || '💬'}</span> ${message}`;
+    container.appendChild(toast);
+    setTimeout(() => {
+      toast.style.animation = 'fadeOut 0.3s ease forwards';
+      toast.addEventListener('animationend', () => toast.remove());
+    }, duration);
+  }
+
+  // ── Username modal ──────────────────────────────────────────────
+  const modal = document.getElementById('usernameModal');
+  document.getElementById('usernameBadge').addEventListener('click', () => {
+    document.getElementById('newUsernameInput').value =
+      document.getElementById('navUsername').textContent.trim();
+    modal.classList.add('open');
+    document.getElementById('newUsernameInput').focus();
+  });
+  document.getElementById('cancelUsernameBtn').addEventListener('click', () => {
+    modal.classList.remove('open');
+  });
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.classList.remove('open');
+  });
+
+  document.getElementById('saveUsernameBtn').addEventListener('click', saveUsername);
+  document.getElementById('newUsernameInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveUsername();
+  });
+
+  function saveUsername() {
+    const val = document.getElementById('newUsernameInput').value.trim();
+    fetch('/change-username', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: val })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById('navUsername').textContent = data.username;
+        document.getElementById('navAvatar').textContent = data.username[0].toUpperCase();
+        modal.classList.remove('open');
+        showToast(`Bienvenido, ${data.username}!`, 'success');
+        // Propagate to page if exists
+        if (typeof onUsernameChange === 'function') onUsernameChange(data.username);
+      } else {
+        showToast(data.error || 'Error al cambiar el nombre.', 'error');
+      }
+    });
+  }
+
+  // Set initial avatar letter
+  const uName = document.getElementById('navUsername').textContent.trim();
+  document.getElementById('navAvatar').textContent = uName ? uName[0].toUpperCase() : 'U';
+</script>
+
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>
