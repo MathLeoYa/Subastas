@@ -1,19 +1,42 @@
 import os
+import uuid
 
 from flask import Flask, render_template, request, redirect, url_for, jsonify, session
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from models import db, Auction, Bid
+from werkzeug.utils import secure_filename
 import random
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'subastasecret2024xK9mP'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///subastas.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024  # 8 MB max
+
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'webp', 'gif'}
 
 db.init_app(app)
 socketio = SocketIO(app, async_mode='threading', cors_allowed_origins='*')
+
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_image(file):
+    """Save uploaded image and return its URL path."""
+    if not file or file.filename == '':
+        return None
+    if not allowed_file(file.filename):
+        return None
+    ext = file.filename.rsplit('.', 1)[1].lower()
+    unique_name = f"{uuid.uuid4().hex}.{ext}"
+    save_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+    file.save(save_path)
+    return f"/static/uploads/{unique_name}"
 
 # ──────────────────────────────────────────────────────────────────
 # Helpers
@@ -196,6 +219,17 @@ def create_auction():
             return render_template('create.html', username=username,
                                    error='Por favor completa todos los campos correctamente.')
 
+        # Handle image upload
+        image_url = '/static/images/default.svg'
+        uploaded_file = request.files.get('image')
+        if uploaded_file and uploaded_file.filename:
+            saved = save_image(uploaded_file)
+            if saved:
+                image_url = saved
+            else:
+                return render_template('create.html', username=username,
+                                       error='Formato de imagen no permitido. Usa JPG, PNG, WEBP o GIF.')
+
         auction = Auction(
             title=title,
             description=description,
@@ -203,6 +237,7 @@ def create_auction():
             current_price=starting_price,
             seller=seller,
             category=category,
+            image_url=image_url,
             ends_at=datetime.utcnow() + timedelta(hours=duration_hours),
             status='active',
         )

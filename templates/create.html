@@ -117,6 +117,88 @@
   color: white;
 }
 
+/* ── IMAGE UPLOADER ──────────────────────────────────────────── */
+.upload-zone {
+  border: 2px dashed var(--border-dark);
+  border-radius: var(--radius);
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--bg);
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover {
+  border-color: var(--text-primary);
+  background: var(--bg-hover);
+}
+.upload-zone input[type='file'] {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+.upload-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+  display: block;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+.upload-zone:hover .upload-icon { color: var(--text-primary); transform: translateY(-2px); }
+.upload-title { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+.upload-hint { font-size: 12px; color: var(--text-muted); }
+.upload-formats {
+  display: flex; gap: 6px; justify-content: center; flex-wrap: wrap;
+  margin-top: 10px;
+}
+.fmt-tag {
+  font-size: 10.5px; font-weight: 700;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: 4px; padding: 2px 7px;
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;
+}
+/* Preview state */
+.upload-preview-wrap {
+  display: none;
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+.upload-preview-img {
+  width: 100%; height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.upload-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0);
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  transition: background 0.2s;
+}
+.upload-preview-wrap:hover .upload-overlay { background: rgba(0,0,0,0.45); }
+.upload-action-btn {
+  background: white; border: none; border-radius: var(--radius-sm);
+  padding: 8px 14px; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; transition: var(--transition);
+  opacity: 0;
+  transform: translateY(4px);
+}
+.upload-preview-wrap:hover .upload-action-btn { opacity: 1; transform: translateY(0); }
+.upload-action-btn.danger { color: var(--danger); }
+.upload-action-btn:hover { box-shadow: var(--shadow); }
+.upload-file-info {
+  padding: 10px 12px;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px;
+}
+.file-name { color: var(--text-secondary); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+.file-size { color: var(--text-muted); flex-shrink: 0; }
+
 /* Error alert */
 .error-alert {
   background: var(--danger-bg);
@@ -237,7 +319,44 @@
 
 <div class="create-layout">
   <!-- FORM -->
-  <form class="form-card" method="POST" action="/create" id="createForm">
+  <form class="form-card" method="POST" action="/create"
+        id="createForm" enctype="multipart/form-data">
+
+    <!-- Section: Imagen -->
+    <div class="form-section">
+      <div class="form-section-title">Imagen del lote</div>
+
+      <!-- Drop zone -->
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" name="image" id="imageInput"
+               accept="image/jpeg,image/png,image/webp,image/gif" />
+        <span class="upload-icon">📷</span>
+        <div class="upload-title">Arrastra tu imagen aquí o haz clic para seleccionar</div>
+        <div class="upload-hint">Máximo 8 MB</div>
+        <div class="upload-formats">
+          <span class="fmt-tag">JPG</span>
+          <span class="fmt-tag">PNG</span>
+          <span class="fmt-tag">WEBP</span>
+          <span class="fmt-tag">GIF</span>
+        </div>
+      </div>
+
+      <!-- Preview (hidden until file selected) -->
+      <div class="upload-preview-wrap" id="previewWrap" style="display:none; margin-top:10px;">
+        <img id="previewImg" class="upload-preview-img" src="" alt="Vista previa" />
+        <div class="upload-overlay">
+          <button type="button" class="upload-action-btn"
+                  onclick="document.getElementById('imageInput').click()">
+            Cambiar imagen
+          </button>
+          <button type="button" class="upload-action-btn danger" onclick="removeImage()">Eliminar</button>
+        </div>
+        <div class="upload-file-info">
+          <span class="file-name" id="fileName">—</span>
+          <span class="file-size" id="fileSize">—</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Section: Artículo -->
     <div class="form-section">
@@ -320,7 +439,8 @@
   <div class="preview-panel">
     <div class="preview-panel-title">Vista previa en tiempo real</div>
     <div class="preview-card">
-      <div class="preview-img-ph">📷 Sin imagen</div>
+      <div class="preview-img-ph" id="pvImgPh">📷 Sin imagen</div>
+      <img id="pvImg" src="" alt="" style="display:none;width:100%;height:160px;object-fit:cover;" />
       <div class="preview-body">
         <div class="preview-cat-label" id="pvCat">Categoría</div>
         <div class="preview-title-el" id="pvTitle" style="color:var(--text-muted);">El título aparecerá aquí</div>
@@ -352,6 +472,75 @@
 
 {% block extra_scripts %}
 <script>
+  // ── Image upload logic ────────────────────────────────────────
+  const imageInput  = document.getElementById('imageInput');
+  const uploadZone  = document.getElementById('uploadZone');
+  const previewWrap = document.getElementById('previewWrap');
+  const previewImg  = document.getElementById('previewImg');
+  const pvImg       = document.getElementById('pvImg');
+  const pvImgPh     = document.getElementById('pvImgPh');
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+    return (bytes/1048576).toFixed(1) + ' MB';
+  }
+
+  function handleFile(file) {
+    if (!file) return;
+    const allowed = ['image/jpeg','image/png','image/webp','image/gif'];
+    if (!allowed.includes(file.type)) {
+      showToast('Formato no permitido. Usa JPG, PNG, WEBP o GIF.', 'error');
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      showToast('La imagen supera el límite de 8 MB.', 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const src = e.target.result;
+      // Main uploader preview
+      previewImg.src = src;
+      previewWrap.style.display = 'block';
+      uploadZone.style.display  = 'none';
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('fileSize').textContent = formatBytes(file.size);
+      // Card preview
+      pvImg.src   = src;
+      pvImg.style.display  = 'block';
+      pvImgPh.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function removeImage() {
+    imageInput.value = '';
+    previewWrap.style.display = 'none';
+    uploadZone.style.display  = 'block';
+    pvImg.style.display  = 'none';
+    pvImgPh.style.display = 'flex';
+    showToast('Imagen eliminada', 'info');
+  }
+
+  imageInput.addEventListener('change', () => handleFile(imageInput.files[0]));
+
+  // Drag & drop
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      // Assign to input via DataTransfer
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      imageInput.files = dt.files;
+      handleFile(file);
+    }
+  });
+
   // ── Live preview ──────────────────────────────────────────────
   const durMap = {'1':'1 hora','6':'6 horas','24':'24 horas','72':'3 días','168':'7 días','336':'14 días','720':'30 días'};
 
@@ -367,8 +556,8 @@
     pvT.textContent = title || 'El título aparecerá aquí';
     pvT.style.color = title ? 'var(--text-primary)' : 'var(--text-muted)';
 
-    document.getElementById('pvPrice').textContent = price ? '$'+price.toLocaleString('en-US') : '—';
-    document.getElementById('pvCat').textContent   = catEl ? catEl.value : 'Categoría';
+    document.getElementById('pvPrice').textContent  = price ? '$'+price.toLocaleString('en-US') : '—';
+    document.getElementById('pvCat').textContent    = catEl ? catEl.value : 'Categoría';
     document.getElementById('pvSeller').textContent = seller;
 
     if (durVal === 'custom') {
