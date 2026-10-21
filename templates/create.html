@@ -1,373 +1,416 @@
 {% extends "layout.html" %}
-
-{% block title %}Nueva Subasta — SubastasPro{% endblock %}
-{% block meta_description %}Crea una nueva subasta en SubastasPro. Publica tu artículo y recibe pujas en tiempo real.{% endblock %}
+{% block title %}Publicar nuevo lote — LoteX{% endblock %}
+{% block meta_description %}Publica un nuevo lote en LoteX y recibe pujas en tiempo real.{% endblock %}
 
 {% block extra_styles %}
-.create-wrap {
-  max-width: 720px;
+.create-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 28px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 3rem 0 5rem;
+  padding: 36px 24px 60px;
+  align-items: start;
 }
-.create-header {
-  margin-bottom: 2.5rem;
-}
-.create-header-label {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--gold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 0.5rem;
-}
-.create-header h1 {
-  font-size: clamp(1.8rem, 4vw, 2.5rem);
-  font-weight: 900;
-  letter-spacing: -1px;
-  margin-bottom: 0.5rem;
-}
-.create-header p {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.7;
-}
+@media (max-width: 860px) { .create-layout { grid-template-columns: 1fr; } }
 
-.create-form {
-  background: var(--bg-card);
+.page-header { margin-bottom: 24px; }
+.page-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.page-title {
+  font-family: var(--font-serif);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+.page-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.6; }
+
+.form-card {
+  background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 2rem;
-  backdrop-filter: blur(12px);
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  overflow: hidden;
 }
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-@media (max-width: 600px) {
-  .form-row { grid-template-columns: 1fr; }
-}
-
-.form-divider {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 0.25rem 0;
-}
-
-.preview-box {
-  background: rgba(245,158,11,0.05);
-  border: 1px dashed rgba(245,158,11,0.3);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-.preview-box .preview-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--gold);
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: 0.25rem;
-}
-.preview-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  padding: 4px 0;
+.form-section {
+  padding: 22px 24px;
   border-bottom: 1px solid var(--border);
 }
-.preview-item:last-child { border-bottom: none; }
-.preview-item strong { color: var(--text-primary); }
+.form-section:last-child { border-bottom: none; }
+.form-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
 
+/* Duration picker */
 .duration-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
-.duration-option {
-  position: relative;
-}
-.duration-option input[type="radio"] {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-}
-.duration-option label {
-  display: block;
-  background: var(--bg-card);
+@media (max-width: 480px) { .duration-grid { grid-template-columns: repeat(2, 1fr); } }
+.dur-opt { position: relative; }
+.dur-opt input { position: absolute; opacity: 0; width: 0; }
+.dur-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 11px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 12px 8px;
-  text-align: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.85rem;
-  font-weight: 600;
+  transition: var(--transition);
+  background: var(--bg);
+}
+.dur-label:hover { border-color: var(--border-dark); background: var(--white); }
+.dur-num { font-size: 17px; font-weight: 800; color: var(--text-primary); }
+.dur-unit { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.dur-opt input:checked + .dur-label {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+}
+.dur-opt input:checked + .dur-label .dur-num,
+.dur-opt input:checked + .dur-label .dur-unit { color: white; }
+
+/* Category pills */
+.cat-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+.cat-opt { position: relative; }
+.cat-opt input { position: absolute; opacity: 0; width: 0; }
+.cat-pill {
+  display: inline-flex;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg);
   color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
 }
-.duration-option label strong {
-  display: block;
-  font-size: 1.1rem;
-  color: var(--text-primary);
-  font-weight: 800;
-}
-.duration-option label small {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-.duration-option input:checked + label {
-  background: var(--gold-faint);
-  border-color: var(--gold);
-  color: var(--gold);
-}
-.duration-option input:checked + label strong,
-.duration-option input:checked + label small { color: var(--gold); }
-.duration-option label:hover {
-  border-color: rgba(245,158,11,0.4);
-  background: var(--gold-faint);
+.cat-pill:hover { border-color: var(--border-dark); color: var(--text-primary); background: var(--white); }
+.cat-opt input:checked + .cat-pill {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: white;
 }
 
-.category-select-wrap { position: relative; }
-.category-select-wrap::after {
-  content: '▾';
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--gold);
-  pointer-events: none;
-  font-size: 0.9rem;
-}
-
+/* Error alert */
 .error-alert {
-  background: rgba(239,68,68,0.1);
-  border: 1px solid rgba(239,68,68,0.3);
+  background: var(--danger-bg);
+  border: 1px solid #fecaca;
   border-radius: var(--radius-sm);
   padding: 12px 16px;
-  font-size: 0.875rem;
+  font-size: 13px;
   color: var(--danger);
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
-.submit-row {
+/* Submit area */
+.form-footer {
+  padding: 20px 24px;
   display: flex;
-  gap: 1rem;
+  gap: 10px;
   align-items: center;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
 }
-.submit-row .btn { flex: 1; }
+
+/* ── PREVIEW CARD ─────────────────────────────────────────────── */
+.preview-panel { position: sticky; top: 80px; }
+.preview-panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.preview-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 0.3s;
+}
+.preview-card:hover { box-shadow: var(--shadow); }
+.preview-img-ph {
+  height: 160px;
+  background: var(--bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.preview-body { padding: 16px; }
+.preview-cat-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.preview-title-el {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  min-height: 20px;
+  line-height: 1.4;
+}
+.preview-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+}
+.preview-row-label { color: var(--text-muted); }
+.preview-row-val { font-weight: 700; color: var(--text-primary); }
+
+/* Tips box */
+.tips-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-top: 14px;
+}
+.tips-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.tip-item {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 7px;
+  line-height: 1.5;
+}
+.tip-icon { flex-shrink: 0; color: var(--text-muted); }
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="create-wrap">
-    <div class="create-header">
-      <div class="create-header-label">🔨 Publicar artículo</div>
-      <h1>Crear Nueva Subasta</h1>
-      <p>Completa los detalles de tu artículo. Las pujas comenzarán de inmediato una vez publicado.</p>
+<div style="max-width:1000px;margin:0 auto;padding:32px 24px 0;">
+  <div class="page-header">
+    <div class="page-eyebrow">Nuevo lote</div>
+    <h1 class="page-title">Publicar en LoteX</h1>
+    <p class="page-desc">Completa los detalles del artículo. Las pujas comenzarán de inmediato una vez publicado.</p>
+  </div>
+
+  {% if error %}
+  <div class="error-alert">⚠ {{ error }}</div>
+  {% endif %}
+</div>
+
+<div class="create-layout">
+  <!-- FORM -->
+  <form class="form-card" method="POST" action="/create" id="createForm">
+
+    <!-- Section: Artículo -->
+    <div class="form-section">
+      <div class="form-section-title">Artículo</div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label" for="titleInput">Título del lote *</label>
+        <input type="text" id="titleInput" name="title" class="form-input"
+               placeholder="Ej: Reloj Omega Speedmaster Edición Apolo 1969"
+               maxlength="200" required autocomplete="off" />
+        <span class="form-hint" id="titleCounter">0 / 200 caracteres</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="descInput">Descripción detallada *</label>
+        <textarea id="descInput" name="description" class="form-input"
+                  placeholder="Estado, historia, incluye accesorios, certificados, dimensiones, etc." rows="4" required></textarea>
+      </div>
     </div>
 
-    {% if error %}
-    <div class="error-alert" style="margin-bottom:1.5rem;">
-      ⚠️ {{ error }}
+    <!-- Section: Categoría -->
+    <div class="form-section">
+      <div class="form-section-title">Categoría</div>
+      <div class="cat-grid" id="catGrid">
+        {% for cat in ['Arte','Relojes','Vehiculos','Joyeria','Musica','Libros','Bebidas','Electronica','Coleccionables','Moda','General'] %}
+        <div class="cat-opt">
+          <input type="radio" name="category" id="cat{{ loop.index }}" value="{{ cat }}"
+                 {% if loop.first %}checked{% endif %} />
+          <label class="cat-pill" for="cat{{ loop.index }}">{{ cat }}</label>
+        </div>
+        {% endfor %}
+      </div>
     </div>
-    {% endif %}
 
-    <form class="create-form" method="POST" action="/create" id="createForm">
-
-      <!-- Título -->
-      <div class="form-group">
-        <label class="form-label" for="title">Título del artículo *</label>
-        <input type="text" id="title" name="title" class="form-input"
-               placeholder="Ej: Reloj Omega Speedmaster Edición Limitada 2019"
-               maxlength="200" required />
-      </div>
-
-      <!-- Descripción -->
-      <div class="form-group">
-        <label class="form-label" for="description">Descripción detallada *</label>
-        <textarea id="description" name="description" class="form-input"
-                  placeholder="Describe el artículo con el mayor detalle posible: estado, historia, incluye accesorios, certificados, etc."
-                  rows="4" required></textarea>
-      </div>
-
-      <hr class="form-divider" />
-
-      <!-- Precio y Vendedor -->
+    <!-- Section: Precio y vendedor -->
+    <div class="form-section">
+      <div class="form-section-title">Precio y vendedor</div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="starting_price">Precio base (USD) *</label>
+          <label class="form-label" for="priceInput">Precio base (USD) *</label>
           <div style="position:relative;">
-            <span style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--gold); font-weight:700;">$</span>
-            <input type="number" id="starting_price" name="starting_price"
-                   class="form-input" style="padding-left:2rem;"
-                   placeholder="0.00" min="1" step="0.01" required />
+            <span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--text-secondary);pointer-events:none;">$</span>
+            <input type="number" id="priceInput" name="starting_price"
+                   class="form-input" style="padding-left:24px;"
+                   placeholder="1,000" min="1" step="1" required />
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label" for="seller">Tu nombre / apodo de vendedor</label>
-          <input type="text" id="seller" name="seller" class="form-input"
-                 placeholder="{{ username }}"
+          <label class="form-label" for="sellerInput">Tu nombre de vendedor</label>
+          <input type="text" id="sellerInput" name="seller" class="form-input"
                  value="{{ username }}" maxlength="100" />
         </div>
       </div>
+    </div>
 
-      <!-- Categoría -->
-      <div class="form-group">
-        <label class="form-label" for="category">Categoría</label>
-        <div class="category-select-wrap">
-          <select id="category" name="category" class="form-input" style="appearance:none; cursor:pointer;">
-            <option value="General">General</option>
-            <option value="Arte">Arte</option>
-            <option value="Relojes">Relojes</option>
-            <option value="Vehículos">Vehículos</option>
-            <option value="Joyería">Joyería</option>
-            <option value="Música">Música</option>
-            <option value="Libros">Libros</option>
-            <option value="Bebidas">Bebidas</option>
-            <option value="Electrónica">Electrónica</option>
-            <option value="Coleccionables">Coleccionables</option>
-            <option value="Moda">Moda</option>
-          </select>
+    <!-- Section: Duración -->
+    <div class="form-section">
+      <div class="form-section-title">Duración</div>
+      <div class="duration-grid">
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="d1" value="1" /><label class="dur-label" for="d1"><span class="dur-num">1</span><span class="dur-unit">Hora</span></label></div>
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="d6" value="6" /><label class="dur-label" for="d6"><span class="dur-num">6</span><span class="dur-unit">Horas</span></label></div>
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="d24" value="24" checked /><label class="dur-label" for="d24"><span class="dur-num">24</span><span class="dur-unit">Horas</span></label></div>
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="d72" value="72" /><label class="dur-label" for="d72"><span class="dur-num">3</span><span class="dur-unit">Días</span></label></div>
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="d168" value="168" /><label class="dur-label" for="d168"><span class="dur-num">7</span><span class="dur-unit">Días</span></label></div>
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="d336" value="336" /><label class="dur-label" for="d336"><span class="dur-num">14</span><span class="dur-unit">Días</span></label></div>
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="d720" value="720" /><label class="dur-label" for="d720"><span class="dur-num">30</span><span class="dur-unit">Días</span></label></div>
+        <div class="dur-opt"><input type="radio" name="duration_hours" id="dcust" value="custom" /><label class="dur-label" for="dcust"><span class="dur-num">✎</span><span class="dur-unit">Otro</span></label></div>
+      </div>
+      <div id="custWrap" style="display:none;margin-top:10px;">
+        <input type="number" id="custHours" class="form-input" placeholder="Número de horas (ej: 48)" min="1" max="8760" />
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="form-footer">
+      <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Publicar lote →</button>
+      <a href="/" class="btn btn-ghost">Cancelar</a>
+    </div>
+  </form>
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-panel-title">Vista previa en tiempo real</div>
+    <div class="preview-card">
+      <div class="preview-img-ph">📷 Sin imagen</div>
+      <div class="preview-body">
+        <div class="preview-cat-label" id="pvCat">Categoría</div>
+        <div class="preview-title-el" id="pvTitle" style="color:var(--text-muted);">El título aparecerá aquí</div>
+        <div class="preview-row">
+          <span class="preview-row-label">Precio base</span>
+          <span class="preview-row-val" id="pvPrice">—</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-row-label">Duración</span>
+          <span class="preview-row-val" id="pvDur">24 horas</span>
+        </div>
+        <div class="preview-row">
+          <span class="preview-row-label">Vendedor</span>
+          <span class="preview-row-val" id="pvSeller">{{ username }}</span>
         </div>
       </div>
+    </div>
 
-      <hr class="form-divider" />
-
-      <!-- Duración -->
-      <div class="form-group">
-        <label class="form-label">Duración de la subasta *</label>
-        <div class="duration-grid">
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="d1" value="1" />
-            <label for="d1"><strong>1</strong><small>hora</small></label>
-          </div>
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="d6" value="6" />
-            <label for="d6"><strong>6</strong><small>horas</small></label>
-          </div>
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="d24" value="24" checked />
-            <label for="d24"><strong>24</strong><small>horas</small></label>
-          </div>
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="d72" value="72" />
-            <label for="d72"><strong>72</strong><small>horas</small></label>
-          </div>
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="d168" value="168" />
-            <label for="d168"><strong>7</strong><small>días</small></label>
-          </div>
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="d336" value="336" />
-            <label for="d336"><strong>14</strong><small>días</small></label>
-          </div>
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="d720" value="720" />
-            <label for="d720"><strong>30</strong><small>días</small></label>
-          </div>
-          <div class="duration-option">
-            <input type="radio" name="duration_hours" id="dcustom" value="custom" />
-            <label for="dcustom"><strong>✎</strong><small>Otra</small></label>
-          </div>
-        </div>
-        <div id="customDurationWrap" style="display:none; margin-top:10px;">
-          <input type="number" id="customDurationInput" class="form-input"
-                 placeholder="Número de horas" min="1" max="8760" />
-        </div>
-      </div>
-
-      <hr class="form-divider" />
-
-      <!-- Preview -->
-      <div class="preview-box" id="livePreview">
-        <div class="preview-title">📋 Vista previa</div>
-        <div class="preview-item">
-          <span>Título</span>
-          <strong id="pvTitle">—</strong>
-        </div>
-        <div class="preview-item">
-          <span>Precio base</span>
-          <strong id="pvPrice">—</strong>
-        </div>
-        <div class="preview-item">
-          <span>Duración</span>
-          <strong id="pvDuration">24 horas</strong>
-        </div>
-        <div class="preview-item">
-          <span>Categoría</span>
-          <strong id="pvCategory">General</strong>
-        </div>
-      </div>
-
-      <!-- Submit -->
-      <div class="submit-row">
-        <a href="/" class="btn btn-ghost">← Cancelar</a>
-        <button type="submit" class="btn btn-gold btn-lg">
-          🔨 Publicar Subasta
-        </button>
-      </div>
-    </form>
+    <div class="tips-box">
+      <div class="tips-title">Consejos para vender más</div>
+      <div class="tip-item"><span class="tip-icon">✓</span>Usa un título descriptivo con marca y modelo</div>
+      <div class="tip-item"><span class="tip-icon">✓</span>Menciona el estado (nuevo, usado, restaurado)</div>
+      <div class="tip-item"><span class="tip-icon">✓</span>Incluye accesorios y certificados en la descripción</div>
+      <div class="tip-item"><span class="tip-icon">✓</span>Un precio base atractivo genera más pujas</div>
+    </div>
   </div>
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
 <script>
-  // Live preview
+  // ── Live preview ──────────────────────────────────────────────
+  const durMap = {'1':'1 hora','6':'6 horas','24':'24 horas','72':'3 días','168':'7 días','336':'14 días','720':'30 días'};
+
   function updatePreview() {
-    const title = document.getElementById('title').value || '—';
-    const price = parseFloat(document.getElementById('starting_price').value);
-    const category = document.getElementById('category').value;
-    const selectedDuration = document.querySelector('input[name="duration_hours"]:checked');
-    const durationVal = selectedDuration ? selectedDuration.value : '24';
+    const title = document.getElementById('titleInput').value;
+    const price = parseFloat(document.getElementById('priceInput').value);
+    const seller = document.getElementById('sellerInput').value || '{{ username }}';
+    const catEl = document.querySelector('input[name="category"]:checked');
+    const durEl = document.querySelector('input[name="duration_hours"]:checked');
+    const durVal = durEl ? durEl.value : '24';
 
-    document.getElementById('pvTitle').textContent = title.length > 40 ? title.slice(0,40) + '…' : title;
-    document.getElementById('pvPrice').textContent = price ? '$' + price.toLocaleString('en-US', {minimumFractionDigits:2}) : '—';
-    document.getElementById('pvCategory').textContent = category;
+    const pvT = document.getElementById('pvTitle');
+    pvT.textContent = title || 'El título aparecerá aquí';
+    pvT.style.color = title ? 'var(--text-primary)' : 'var(--text-muted)';
 
-    const durationMap = { '1':'1 hora', '6':'6 horas', '24':'24 horas', '72':'3 días',
-                          '168':'7 días', '336':'14 días', '720':'30 días' };
-    if (durationVal === 'custom') {
-      const cv = document.getElementById('customDurationInput').value;
-      document.getElementById('pvDuration').textContent = cv ? cv + ' horas' : 'Personalizada';
+    document.getElementById('pvPrice').textContent = price ? '$'+price.toLocaleString('en-US') : '—';
+    document.getElementById('pvCat').textContent   = catEl ? catEl.value : 'Categoría';
+    document.getElementById('pvSeller').textContent = seller;
+
+    if (durVal === 'custom') {
+      const cv = document.getElementById('custHours').value;
+      document.getElementById('pvDur').textContent = cv ? cv + ' horas' : 'Personalizado';
     } else {
-      document.getElementById('pvDuration').textContent = durationMap[durationVal] || durationVal + ' horas';
+      document.getElementById('pvDur').textContent = durMap[durVal] || durVal + ' horas';
     }
   }
 
-  document.getElementById('title').addEventListener('input', updatePreview);
-  document.getElementById('starting_price').addEventListener('input', updatePreview);
-  document.getElementById('category').addEventListener('change', updatePreview);
+  // ── Title counter ─────────────────────────────────────────────
+  document.getElementById('titleInput').addEventListener('input', function() {
+    document.getElementById('titleCounter').textContent = `${this.value.length} / 200 caracteres`;
+    updatePreview();
+  });
+
+  document.getElementById('priceInput').addEventListener('input', updatePreview);
+  document.getElementById('sellerInput').addEventListener('input', updatePreview);
+  document.querySelectorAll('input[name="category"]').forEach(r => r.addEventListener('change', updatePreview));
   document.querySelectorAll('input[name="duration_hours"]').forEach(r => {
     r.addEventListener('change', () => {
-      const wrap = document.getElementById('customDurationWrap');
-      wrap.style.display = r.value === 'custom' ? 'block' : 'none';
+      document.getElementById('custWrap').style.display = r.value === 'custom' ? 'block' : 'none';
       updatePreview();
     });
   });
-  document.getElementById('customDurationInput').addEventListener('input', updatePreview);
+  document.getElementById('custHours').addEventListener('input', updatePreview);
 
-  // Custom duration form handling
-  document.getElementById('createForm').addEventListener('submit', (e) => {
-    const customRadio = document.getElementById('dcustom');
-    if (customRadio.checked) {
-      const cv = parseInt(document.getElementById('customDurationInput').value);
-      if (!cv || cv < 1) {
+  // ── Submit handling ───────────────────────────────────────────
+  document.getElementById('createForm').addEventListener('submit', function(e) {
+    const custRadio = document.getElementById('dcust');
+    if (custRadio.checked) {
+      const v = parseInt(document.getElementById('custHours').value);
+      if (!v || v < 1) {
         e.preventDefault();
-        showToast('Por favor ingresa una duración personalizada válida.', 'error');
+        showToast('Ingresa una duración personalizada válida', 'error');
         return;
       }
-      customRadio.value = cv;
+      custRadio.value = v;
     }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Publicando…';
   });
 
   updatePreview();

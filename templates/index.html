@@ -1,127 +1,198 @@
 {% extends "layout.html" %}
-
-{% block title %}SubastasPro — Subastas en Tiempo Real{% endblock %}
+{% block title %}LoteX — Subastas Profesionales en Línea{% endblock %}
 
 {% block extra_styles %}
-/* ── HERO ──────────────────────────────────────────────────── */
-.hero {
-  padding: 4rem 0 3rem;
-  text-align: center;
+/* ── HERO STRIP ──────────────────────────────────────────────── */
+.hero-strip {
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  padding: 52px 24px;
 }
-.hero-label {
-  display: inline-flex;
+.hero-strip-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.hero-title-block {}
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 10px;
+  display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--gold-faint);
-  border: 1px solid rgba(245,158,11,0.25);
+}
+.live-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(22,163,74,0.2);
+  border: 1px solid rgba(22,163,74,0.4);
   border-radius: 100px;
-  padding: 6px 16px;
-  font-size: 0.78rem;
+  padding: 2px 10px 2px 6px;
+  color: #4ade80;
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--gold);
-  text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 1.25rem;
 }
-.hero h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  font-weight: 900;
-  letter-spacing: -1.5px;
-  line-height: 1.1;
-  margin-bottom: 1rem;
-  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #4ade80;
+  animation: statusPulse 1.5s infinite;
 }
-.hero h1 .highlight {
-  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.hero-h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(26px, 4vw, 42px);
+  font-weight: 700;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  color: white;
+  margin-bottom: 12px;
 }
 .hero-sub {
-  font-size: 1.05rem;
-  color: var(--text-secondary);
-  max-width: 520px;
-  margin: 0 auto 2rem;
+  font-size: 14px;
+  color: rgba(255,255,255,0.6);
+  max-width: 420px;
   line-height: 1.7;
 }
 .hero-stats {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2.5rem;
+  gap: 32px;
   flex-wrap: wrap;
 }
-.stat {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
+.stat-item {
+  text-align: right;
 }
-.stat-value {
-  font-size: 1.5rem;
+.stat-num {
+  font-size: 28px;
   font-weight: 800;
-  color: var(--gold);
+  color: white;
+  letter-spacing: -1px;
+  line-height: 1;
+  margin-bottom: 4px;
 }
 .stat-label {
-  font-size: 0.78rem;
-  color: var(--text-muted);
+  font-size: 11px;
+  color: rgba(255,255,255,0.45);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
+  font-weight: 600;
 }
 
-/* ── FILTERS ───────────────────────────────────────────────── */
-.filters-bar {
+/* ── TOOLBAR ─────────────────────────────────────────────────── */
+.toolbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 60px;
+  z-index: 80;
+}
+.toolbar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 52px;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  gap: 16px;
 }
-.filters-bar .label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  flex-shrink: 0;
-}
-.filter-chips {
+.filter-group {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
   flex-wrap: wrap;
-  flex: 1;
 }
-.chip {
-  padding: 6px 14px;
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
   border-radius: 100px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  background: var(--bg-card);
+  font-size: 12.5px;
+  font-weight: 500;
+  background: transparent;
   border: 1px solid var(--border);
   color: var(--text-secondary);
   cursor: pointer;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: var(--transition);
   white-space: nowrap;
 }
-.chip:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-faint); }
-.chip.active { background: var(--gold-faint); border-color: var(--gold); color: var(--gold); }
+.filter-pill:hover { border-color: var(--border-dark); color: var(--text-primary); background: var(--bg-subtle); }
+.filter-pill.active {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  color: white;
+}
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.sort-select {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 5px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition);
+}
+.sort-select:hover, .sort-select:focus { border-color: var(--border-dark); color: var(--text-primary); }
+.results-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.view-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.view-btn {
+  padding: 5px 9px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+.view-btn.active { background: var(--bg-subtle); color: var(--text-primary); }
+.view-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
 
-/* ── AUCTION GRID ──────────────────────────────────────────── */
+/* ── GRID ────────────────────────────────────────────────────── */
+.page-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
 .auction-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
-  gap: 1.5rem;
-  padding-bottom: 4rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+.auction-grid.list-view {
+  grid-template-columns: 1fr;
 }
 
+/* ── AUCTION CARD ────────────────────────────────────────────── */
 .auction-card {
-  background: var(--bg-card);
+  background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -129,246 +200,325 @@
   color: inherit;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  cursor: pointer;
+  transition: var(--transition-slow);
   position: relative;
+  cursor: pointer;
 }
 .auction-card:hover {
-  border-color: var(--border-glow);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(245,158,11,0.1);
-  transform: translateY(-6px);
+  border-color: var(--border-dark);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
 }
-.auction-card.closed { opacity: 0.65; }
+.auction-card:active { transform: translateY(-1px); }
+.auction-card.closed { opacity: 0.7; }
+.auction-card.closed:hover { opacity: 0.85; }
 
-.card-image-wrap {
-  height: 200px;
-  overflow: hidden;
-  position: relative;
-  background: linear-gradient(135deg, #1a1a2e, #0f3460);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Watchlist heart */
+.card-watchlist {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 2;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+  box-shadow: var(--shadow-xs);
+  opacity: 0;
 }
-.card-image-wrap svg, .card-image-wrap img {
+.auction-card:hover .card-watchlist { opacity: 1; }
+.card-watchlist:hover { transform: scale(1.1); border-color: #fca5a5; }
+.card-watchlist.liked { opacity: 1; color: #ef4444; border-color: #fca5a5; background: #fff; }
+
+.card-img {
   width: 100%;
-  height: 100%;
+  height: 188px;
   object-fit: cover;
-  transition: transform 0.5s ease;
+  background: var(--bg-subtle);
+  display: block;
+  transition: transform 0.4s ease;
 }
-.auction-card:hover .card-image-wrap svg,
-.auction-card:hover .card-image-wrap img {
-  transform: scale(1.06);
-}
+.auction-card:hover .card-img { transform: scale(1.04); }
+.card-img-wrap { overflow: hidden; position: relative; flex-shrink: 0; }
 
 .card-badges {
   position: absolute;
-  top: 12px;
-  left: 12px;
+  bottom: 10px;
+  left: 10px;
   display: flex;
-  gap: 6px;
+  gap: 5px;
 }
 
 .card-body {
-  padding: 1.25rem;
+  padding: 16px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 8px;
 }
-
-.card-category {
-  font-size: 0.72rem;
+.card-cat {
+  font-size: 11px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
 }
-
 .card-title {
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 700;
-  line-height: 1.35;
   color: var(--text-primary);
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 .card-seller {
-  font-size: 0.78rem;
+  font-size: 12px;
   color: var(--text-muted);
 }
-.card-seller span { color: var(--text-secondary); font-weight: 600; }
+.card-seller b { color: var(--text-secondary); font-weight: 600; }
 
 .card-footer {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  padding-top: 12px;
   margin-top: auto;
-  padding-top: 0.75rem;
   border-top: 1px solid var(--border);
 }
-
 .price-block {}
 .price-label {
-  font-size: 0.7rem;
+  font-size: 10.5px;
   color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   margin-bottom: 2px;
 }
-.price-value {
-  font-size: 1.35rem;
-  font-weight: 900;
-  color: var(--gold);
+.price-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
   letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
-
-.countdown-block { text-align: right; }
-.countdown-label {
-  font-size: 0.7rem;
+.countdown-wrap { text-align: right; }
+.countdown-label-sm {
+  font-size: 10.5px;
   color: var(--text-muted);
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
   margin-bottom: 2px;
 }
-.countdown-value {
-  font-size: 0.9rem;
+.countdown-val {
+  font-size: 13px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
 }
-.countdown-value.urgent { color: var(--danger); animation: urgentPulse 0.8s ease-in-out infinite; }
-@keyframes urgentPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.6; }
+.countdown-val.urgent {
+  color: var(--danger);
+  animation: urgentBlink 0.9s ease-in-out infinite;
+}
+@keyframes urgentBlink {
+  0%,100% { opacity: 1; } 50% { opacity: 0.5; }
 }
 
-/* ── EMPTY STATE ───────────────────────────────────────────── */
+/* Bid bar */
+.bid-bar-wrap {
+  padding: 0 16px 14px;
+}
+.bid-bar-track {
+  height: 3px;
+  background: var(--bg-subtle);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bid-bar-fill {
+  height: 100%;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: width 0.6s ease;
+}
+
+/* List view card */
+.auction-grid.list-view .auction-card { flex-direction: row; height: 100px; }
+.auction-grid.list-view .card-img-wrap { width: 140px; flex-shrink: 0; height: 100%; }
+.auction-grid.list-view .card-img { height: 100%; }
+.auction-grid.list-view .card-body { padding: 14px; flex-direction: row; align-items: center; gap: 16px; }
+.auction-grid.list-view .card-cat { display: none; }
+.auction-grid.list-view .card-seller { display: none; }
+.auction-grid.list-view .card-title { -webkit-line-clamp: 1; flex: 1; }
+.auction-grid.list-view .card-footer { padding-top: 0; border-top: none; flex-shrink: 0; flex-direction: column; align-items: flex-end; gap: 4px; }
+.auction-grid.list-view .bid-bar-wrap { display: none; }
+.auction-grid.list-view .card-watchlist { top: 50%; transform: translateY(-50%); opacity: 1; right: 16px; }
+.auction-grid.list-view .auction-card:hover { transform: translateY(0); box-shadow: var(--shadow); }
+
+/* ── EMPTY STATE ─────────────────────────────────────────────── */
 .empty-state {
   text-align: center;
-  padding: 5rem 1rem;
+  padding: 64px 20px;
   color: var(--text-muted);
 }
-.empty-icon { font-size: 4rem; margin-bottom: 1rem; }
-.empty-title { font-size: 1.2rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem; }
-
+.empty-icon {
+  font-size: 40px;
+  margin-bottom: 16px;
+  display: block;
+}
+.empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.empty-desc { font-size: 13px; line-height: 1.6; }
+.empty-desc a { color: var(--text-primary); font-weight: 600; }
 {% endblock %}
 
 {% block content %}
-<div class="container">
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-label">
-      <div class="pulse-dot"></div>
-      Subastas en vivo
+<!-- Hero -->
+<section class="hero-strip">
+  <div class="hero-strip-inner">
+    <div class="hero-title-block">
+      <div class="hero-eyebrow">
+        <span class="live-indicator"><span class="live-dot"></span>EN VIVO</span>
+        Plataforma de Subastas
+      </div>
+      <h1 class="hero-h1">Descubre lotes<br>excepcionales</h1>
+      <p class="hero-sub">Pujas en tiempo real sobre artículos únicos de colección, arte, vehículos y más.</p>
     </div>
-    <h1>El Mercado de <span class="highlight">Tesoros</span><br>Únicos</h1>
-    <p class="hero-sub">
-      Descubre artículos exclusivos y haz tus pujas en tiempo real.
-      Cada pieza cuenta una historia.
-    </p>
     <div class="hero-stats">
-      <div class="stat">
-        <div class="stat-value" id="totalAuctions">{{ auctions | length }}</div>
-        <div class="stat-label">Subastas</div>
+      <div class="stat-item">
+        <div class="stat-num">{{ auctions | length }}</div>
+        <div class="stat-label">Lotes activos</div>
       </div>
-      <div class="stat" style="border-left: 1px solid var(--border); border-right: 1px solid var(--border); padding: 0 2.5rem;">
-        <div class="stat-value">
-          {% set total_bids = auctions | map(attribute='bid_count') | sum %}
-          {{ total_bids }}
-        </div>
-        <div class="stat-label">Pujas Totales</div>
+      <div class="stat-item">
+        <div class="stat-num">{% set tb = auctions | map(attribute='bid_count') | sum %}{{ tb }}</div>
+        <div class="stat-label">Pujas totales</div>
       </div>
-      <div class="stat">
-        <div class="stat-value">{{ categories | length }}</div>
+      <div class="stat-item">
+        <div class="stat-num">{{ categories | length }}</div>
         <div class="stat-label">Categorías</div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Filters -->
-  <div class="filters-bar">
-    <span class="label">Estado:</span>
-    <div class="filter-chips">
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="filter-group">
       <a href="/?status=all&category={{ selected_category }}"
-         class="chip {% if selected_status == 'all' %}active{% endif %}">Todas</a>
+         class="filter-pill {% if selected_status == 'all' %}active{% endif %}">Todos</a>
       <a href="/?status=active&category={{ selected_category }}"
-         class="chip {% if selected_status == 'active' %}active{% endif %}">
-        🟢 Activas
+         class="filter-pill {% if selected_status == 'active' %}active{% endif %}">
+        <span class="live-dot" style="background:var(--success);animation:none;"></span> Activos
       </a>
       <a href="/?status=closed&category={{ selected_category }}"
-         class="chip {% if selected_status == 'closed' %}active{% endif %}">
-        🔴 Cerradas
-      </a>
-    </div>
-
-    <span class="label" style="margin-left:1rem;">Categoría:</span>
-    <div class="filter-chips">
-      <a href="/?status={{ selected_status }}&category=all"
-         class="chip {% if selected_category == 'all' %}active{% endif %}">Todas</a>
+         class="filter-pill {% if selected_status == 'closed' %}active{% endif %}">Cerrados</a>
+      <span style="width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0;"></span>
       {% for cat in categories %}
       <a href="/?status={{ selected_status }}&category={{ cat }}"
-         class="chip {% if selected_category == cat %}active{% endif %}">{{ cat }}</a>
+         class="filter-pill {% if selected_category == cat %}active{% endif %}">{{ cat }}</a>
       {% endfor %}
+      {% if selected_category != 'all' %}
+      <a href="/?status={{ selected_status }}&category=all"
+         class="filter-pill" style="color:var(--danger);">✕ Limpiar</a>
+      {% endif %}
+    </div>
+    <div class="toolbar-right">
+      <span class="results-count">{{ auctions | length }} resultado{% if auctions|length != 1 %}s{% endif %}</span>
+      <select class="sort-select" id="sortSelect">
+        <option value="ends_asc">Termina pronto</option>
+        <option value="price_asc">Menor precio</option>
+        <option value="price_desc">Mayor precio</option>
+        <option value="bids_desc">Más pujas</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-btn active" id="gridViewBtn" title="Vista cuadrícula">⊞</button>
+        <button class="view-btn" id="listViewBtn" title="Vista lista">☰</button>
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- Grid -->
+<!-- Grid -->
+<div class="page-body">
   {% if auctions %}
   <div class="auction-grid" id="auctionGrid">
     {% for auction in auctions %}
-    <a href="/auction/{{ auction.id }}"
-       class="auction-card {% if auction.status == 'closed' %}closed{% endif %}"
-       data-ends="{{ auction.ends_at.isoformat() }}"
-       data-id="{{ auction.id }}">
+    <div class="auction-card {% if auction.status == 'closed' %}closed{% endif %}"
+         data-ends="{{ auction.ends_at.isoformat() }}"
+         data-price="{{ auction.current_price }}"
+         data-bids="{{ auction.bid_count }}"
+         data-id="{{ auction.id }}"
+         onclick="window.location='/auction/{{ auction.id }}'"
+         tabindex="0"
+         role="article"
+         aria-label="{{ auction.title }}, precio actual ${{ '{:,.0f}'.format(auction.current_price) }}">
 
-      <div class="card-image-wrap">
-        <img src="{{ auction.image_url }}" alt="{{ auction.title }}" loading="lazy" />
+      <div class="card-img-wrap">
+        <img class="card-img" src="{{ auction.image_url }}" alt="{{ auction.title }}" loading="lazy" />
         <div class="card-badges">
           {% if auction.status == 'active' %}
-            <span class="badge badge-active"><div class="pulse-dot"></div> ACTIVA</span>
+            <span class="badge badge-active"><span class="status-dot"></span> Activo</span>
           {% else %}
-            <span class="badge badge-closed">CERRADA</span>
+            <span class="badge badge-closed">Cerrado</span>
           {% endif %}
-          <span class="badge badge-gold">{{ auction.category }}</span>
+          <span class="badge badge-cat">{{ auction.category }}</span>
         </div>
       </div>
 
+      <!-- Watchlist btn -->
+      <button class="card-watchlist {% if auction.id in (session.get('watchlist') or []) %}liked{% endif %}"
+              onclick="event.stopPropagation(); toggleWatchlist(this, {{ auction.id }})"
+              title="Guardar lote" aria-label="Guardar en lista">
+        ♥
+      </button>
+
       <div class="card-body">
-        <div class="card-category">{{ auction.category }}</div>
+        <div class="card-cat">{{ auction.category }}</div>
         <div class="card-title">{{ auction.title }}</div>
-        <div class="card-seller">Vendedor: <span>{{ auction.seller }}</span> &nbsp;·&nbsp; {{ auction.bid_count }} puja{% if auction.bid_count != 1 %}s{% endif %}</div>
+        <div class="card-seller">Por <b>{{ auction.seller }}</b> · {{ auction.bid_count }} puja{% if auction.bid_count != 1 %}s{% endif %}</div>
 
         <div class="card-footer">
           <div class="price-block">
             <div class="price-label">Precio actual</div>
-            <div class="price-value">${{ "{:,.2f}".format(auction.current_price) }}</div>
+            <div class="price-val">${{ "{:,.0f}".format(auction.current_price) }}</div>
           </div>
-          <div class="countdown-block">
-            <div class="countdown-label">
-              {% if auction.status == 'active' %}Tiempo restante{% else %}Estado{% endif %}
-            </div>
+          <div class="countdown-wrap">
             {% if auction.status == 'active' %}
-              <div class="countdown-value" data-ends="{{ auction.ends_at.isoformat() }}" data-id="{{ auction.id }}">
-                Cargando...
-              </div>
+              <div class="countdown-label-sm">Termina en</div>
+              <div class="countdown-val" data-ends="{{ auction.ends_at.isoformat() }}">—</div>
             {% else %}
-              <div class="countdown-value" style="color:var(--danger);">Subasta cerrada</div>
+              <div class="countdown-label-sm">Estado</div>
+              <div class="countdown-val" style="color:var(--text-muted);">Cerrado</div>
             {% endif %}
           </div>
         </div>
       </div>
-    </a>
+
+      {% if auction.bid_count > 0 %}
+      <div class="bid-bar-wrap">
+        <div class="bid-bar-track">
+          <div class="bid-bar-fill" style="width:{{ [auction.bid_count * 10, 100] | min }}%"></div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
     {% endfor %}
   </div>
   {% else %}
   <div class="empty-state">
-    <div class="empty-icon">🔍</div>
-    <div class="empty-title">No se encontraron subastas</div>
-    <p>Intenta con otro filtro o <a href="/create" style="color:var(--gold)">crea una nueva subasta</a>.</p>
+    <span class="empty-icon">🔍</span>
+    <div class="empty-title">No hay resultados</div>
+    <p class="empty-desc">Prueba con otros filtros o <a href="/create">publica un nuevo lote</a>.</p>
   </div>
   {% endif %}
 </div>
@@ -376,37 +526,96 @@
 
 {% block extra_scripts %}
 <script>
-  // ── Countdown timers ─────────────────────────────────────────────
-  function formatCountdown(ms) {
-    if (ms <= 0) return 'Expirada';
-    const totalSeconds = Math.floor(ms / 1000);
-    const d = Math.floor(totalSeconds / 86400);
-    const h = Math.floor((totalSeconds % 86400) / 3600);
-    const m = Math.floor((totalSeconds % 3600) / 60);
-    const s = totalSeconds % 60;
+  // ── Countdowns ────────────────────────────────────────────────
+  function formatCd(ms) {
+    if (ms <= 0) return 'Expirado';
+    const s = Math.floor(ms/1000), d = Math.floor(s/86400),
+          h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60), sec = s%60;
     if (d > 0) return `${d}d ${h}h ${m}m`;
-    if (h > 0) return `${h}h ${m}m ${s}s`;
-    return `${m}m ${s}s`;
+    if (h > 0) return `${h}h ${m}m ${sec}s`;
+    return `${m}m ${sec}s`;
   }
-
   function updateCountdowns() {
     const now = Date.now();
-    document.querySelectorAll('.countdown-value[data-ends]').forEach(el => {
-      const ends = new Date(el.dataset.ends + 'Z').getTime();
-      const diff = ends - now;
-      el.textContent = formatCountdown(diff);
-      if (diff <= 0) {
-        el.textContent = 'Expirada';
-        el.classList.add('urgent');
-      } else if (diff < 3600000) {
-        el.classList.add('urgent');
-      } else {
-        el.classList.remove('urgent');
-      }
+    document.querySelectorAll('.countdown-val[data-ends]').forEach(el => {
+      const t = new Date(el.dataset.ends + 'Z').getTime() - now;
+      el.textContent = formatCd(t);
+      el.classList.toggle('urgent', t < 3600000 && t > 0);
     });
   }
-
   updateCountdowns();
   setInterval(updateCountdowns, 1000);
+
+  // ── View toggle ───────────────────────────────────────────────
+  const grid = document.getElementById('auctionGrid');
+  document.getElementById('gridViewBtn').addEventListener('click', function() {
+    grid && grid.classList.remove('list-view');
+    this.classList.add('active');
+    document.getElementById('listViewBtn').classList.remove('active');
+    localStorage.setItem('lx_view', 'grid');
+  });
+  document.getElementById('listViewBtn').addEventListener('click', function() {
+    grid && grid.classList.add('list-view');
+    this.classList.add('active');
+    document.getElementById('gridViewBtn').classList.remove('active');
+    localStorage.setItem('lx_view', 'list');
+  });
+  // Restore view preference
+  if (localStorage.getItem('lx_view') === 'list' && grid) {
+    grid.classList.add('list-view');
+    document.getElementById('listViewBtn').classList.add('active');
+    document.getElementById('gridViewBtn').classList.remove('active');
+  }
+
+  // ── Sort ──────────────────────────────────────────────────────
+  document.getElementById('sortSelect').addEventListener('change', function() {
+    if (!grid) return;
+    const cards = Array.from(grid.querySelectorAll('.auction-card'));
+    const val = this.value;
+    cards.sort((a, b) => {
+      if (val === 'price_asc')  return +a.dataset.price - +b.dataset.price;
+      if (val === 'price_desc') return +b.dataset.price - +a.dataset.price;
+      if (val === 'bids_desc')  return +b.dataset.bids  - +a.dataset.bids;
+      // ends_asc: parse ISO date
+      const da = new Date(a.dataset.ends+'Z'), db = new Date(b.dataset.ends+'Z');
+      return da - db;
+    });
+    cards.forEach(c => grid.appendChild(c));
+  });
+
+  // ── Watchlist (localStorage) ──────────────────────────────────
+  function getWatchlist() {
+    try { return JSON.parse(localStorage.getItem('lx_watchlist') || '[]'); } catch { return []; }
+  }
+  function toggleWatchlist(btn, id) {
+    let wl = getWatchlist();
+    if (wl.includes(id)) {
+      wl = wl.filter(x => x !== id);
+      btn.classList.remove('liked');
+      showToast('Lote eliminado de tu lista', 'info');
+    } else {
+      wl.push(id);
+      btn.classList.add('liked');
+      showToast('Lote guardado en tu lista', 'success');
+    }
+    localStorage.setItem('lx_watchlist', JSON.stringify(wl));
+  }
+  // Restore watchlist state
+  const wl = getWatchlist();
+  document.querySelectorAll('.card-watchlist').forEach(btn => {
+    const card = btn.closest('.auction-card');
+    if (card && wl.includes(+card.dataset.id)) btn.classList.add('liked');
+  });
+
+  // ── Keyboard card navigation ──────────────────────────────────
+  document.querySelectorAll('.auction-card[tabindex]').forEach(card => {
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const id = card.dataset.id;
+        if (id) window.location = `/auction/${id}`;
+      }
+    });
+  });
 </script>
 {% endblock %}
